@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: transaction
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017
+      database: demo
+
+server:
+  port: 8084
+
+microservices:
+  customer:
+    urlPaths:
+      getCustomerById: http://localhost:8081/api/customers/{customerId}
+  account:
+    urlPaths:
+      getAccountById: http://localhost:8081/api/accounts/{customerId}
+  credit:
+    urlPaths:
+      getCreditById: http://localhost:8081/api/credits/{customerId}

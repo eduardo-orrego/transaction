@@ -1,4 +1,4 @@
-package com.example.transaction;
+package com.nttdata.transaction;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
