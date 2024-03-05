@@ -1,13 +1,13 @@
-package com.example.transaction;
+package com.nttdata.movement;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class TransactionApplication {
+public class MovementApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(TransactionApplication.class, args);
+		SpringApplication.run(MovementApplication.class, args);
 	}
 
 }

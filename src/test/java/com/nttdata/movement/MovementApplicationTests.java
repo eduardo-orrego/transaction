@@ -1,10 +1,10 @@
-package com.example.transaction;
+package com.nttdata.movement;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class TransactionApplicationTests {
+class MovementApplicationTests {
 
 	@Test
 	void contextLoads() {

@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: movement
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017
+      database: demo
+
+server:
+  port: 8084
+
+microservices:
+  customer:
+    urlPaths:
+      getCustomerById: http://localhost:8081/api/customers/{customerId}
+  account:
+    urlPaths:
+      getAccountByNumber: http://localhost:8082/api/accounts/{accountNumber}
+      putAccount: http://localhost:8082/api/accounts
+  credit:
+    urlPaths:
+      getCreditByNumber: http://localhost:8083/api/credits/{accountNumber}
+      putCredit: http://localhost:8083/api/credits
