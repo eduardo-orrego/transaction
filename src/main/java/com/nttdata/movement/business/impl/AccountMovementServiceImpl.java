@@ -40,7 +40,7 @@ public class AccountMovementServiceImpl implements AccountMovementService {
     private Mono<AccountMovement> validateAccountMovement(AccountMovement accountMovement) {
         return accountService.getAccountByAccountNumber(accountMovement.getAccountNumber())
             .flatMap(accountData ->
-                accountMovementRepository.countByAccountNumberAndCurrentMonth(accountMovement.getAccountNumber())
+                accountMovementRepository.countByAccountNumber(accountMovement.getAccountNumber())
                     .flatMap(countLong ->
                         this.validateAccount(accountData, accountMovement, countLong)
                             .flatMap(accountService::putAccount)

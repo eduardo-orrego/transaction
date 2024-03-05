@@ -12,6 +12,6 @@ public interface AccountMovementRepository extends ReactiveMongoRepository<Accou
 
     Flux<AccountMovement> getByAccountNumber(String accountNumber);
 
-    Mono<Long> countByAccountNumberAndCurrentMonth(BigInteger accountNumber);
+    Mono<Long> countByAccountNumber(BigInteger accountNumber);
 
 }
