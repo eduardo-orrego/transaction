@@ -7,7 +7,6 @@ import com.nttdata.movement.model.credit.Credit;
 import com.nttdata.movement.model.enums.CreditMovementTypeEnum;
 import com.nttdata.movement.model.enums.CreditTypeEnum;
 import com.nttdata.movement.repository.CreditMovementRepository;
-import java.math.BigDecimal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -28,42 +27,58 @@ public class CreditMovementServiceImpl implements CreditMovementService {
     @Override
     public Mono<CreditMovement> saveCreditMovement(CreditMovement creditMovement) {
         return this.validateCreditMovement(creditMovement)
-            .flatMap(creditData -> {
-                creditMovement.setOutstandingBalance(creditData.getOutstandingBalance());
-                return creditMovementRepository.save(creditMovement);
-            });
+            .flatMap(creditMovementRepository::save);
     }
-
 
     @Override
     public Flux<CreditMovement> getCreditMovements(String creditId) {
         return creditMovementRepository.getByCreditNumber(creditId);
     }
 
-    private Mono<Credit> validateCreditMovement(CreditMovement creditMovement) {
-        return creditService.getCreditByNumber(creditMovement.getCreditNumber())
+    private Mono<CreditMovement> validateCreditMovement(CreditMovement creditMovementData) {
+        return creditService.getCreditByNumber(creditMovementData.getCreditNumber())
+            .switchIfEmpty(Mono.error(new Exception("Numero de credito no encontrado")))
+            .flatMap(creditData -> this.validateCredit(creditData, creditMovementData))
+            .flatMap(creditService::putCredit)
             .map(creditData -> {
-                BigDecimal outstandingBalance = creditData.getOutstandingBalance();
+                creditMovementData.setOutstandingBalance(creditData.getOutstandingBalance());
+                return creditMovementData;
+            });
+    }
 
-                if (creditData.getType().equals(CreditTypeEnum.CREDIT_CARD.name())) {
-                    if (creditMovement.getTransactionType().name().equals(CreditMovementTypeEnum.PAYMENT.name())) {
-                        creditData.setOutstandingBalance(outstandingBalance.subtract(creditMovement.getOutstandingBalance()));
-                        creditData.getCreditCardInfo().setAvailableBalance(creditData.getCreditCardInfo()
-                            .getAvailableBalance().add(creditMovement.getOutstandingBalance()));
-                    } else {
-                        creditData.setOutstandingBalance(outstandingBalance.add(creditMovement.getOutstandingBalance()));
-                        creditData.getCreditCardInfo().setAvailableBalance(creditData.getCreditCardInfo()
-                            .getAvailableBalance().subtract(creditMovement.getOutstandingBalance()));
-                    }
-                } else {
-                    if (creditMovement.getTransactionType().name().equals(CreditMovementTypeEnum.PAYMENT.name())) {
-                        creditData.setOutstandingBalance(outstandingBalance.subtract(creditMovement.getOutstandingBalance()));
-                    } else {
-                        creditData.setOutstandingBalance(outstandingBalance.add(creditMovement.getOutstandingBalance()));
-                    }
-                }
-                return creditData;
-            })
-            .flatMap(creditService::putCredit);
+    private Mono<Credit> validateCredit(Credit creditData, CreditMovement creditMovementData){
+        if (creditData.getType().equals(CreditTypeEnum.CREDIT_CARD.name())) {
+            return this.validateCreditCardCredit(creditData, creditMovementData);
+        }
+        if (creditData.getType().equals(CreditTypeEnum.LOAN.name())) {
+            return this.validateLoanCredit(creditData, creditMovementData);
+        }
+        return Mono.just(creditData);
+    }
+
+    private Mono<Credit> validateLoanCredit(Credit creditData, CreditMovement creditMovementData) {
+        if (creditMovementData.getTransactionType().name().equals(CreditMovementTypeEnum.PAYMENT.name())) {
+            creditData.setOutstandingBalance(creditData.getOutstandingBalance()
+                .subtract(creditMovementData.getOutstandingBalance()));
+        } else {
+            creditData.setOutstandingBalance(creditData.getOutstandingBalance()
+                .add(creditMovementData.getOutstandingBalance()));
+        }
+        return Mono.just(creditData);
+    }
+
+    private Mono<Credit> validateCreditCardCredit(Credit creditData, CreditMovement creditMovementData) {
+        if (creditMovementData.getTransactionType().name().equals(CreditMovementTypeEnum.PAYMENT.name())) {
+            creditData.setOutstandingBalance(creditData.getOutstandingBalance()
+                .subtract(creditMovementData.getOutstandingBalance()));
+            creditData.getCreditCardInfo().setAvailableBalance(creditData.getCreditCardInfo().getAvailableBalance()
+                .add(creditMovementData.getOutstandingBalance()));
+        } else {
+            creditData.setOutstandingBalance(creditData.getOutstandingBalance()
+                .add(creditMovementData.getOutstandingBalance()));
+            creditData.getCreditCardInfo().setAvailableBalance(creditData.getCreditCardInfo().getAvailableBalance()
+                .subtract(creditMovementData.getOutstandingBalance()));
+        }
+        return Mono.just(creditData);
     }
 }

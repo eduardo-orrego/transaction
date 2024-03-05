@@ -15,7 +15,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.format.annotation.DateTimeFormat;
 
 @Data
 @AllArgsConstructor
@@ -46,6 +45,9 @@ public class AccountMovement {
 
     @JsonProperty(value = "amount")
     private BigDecimal amount;
+
+    @JsonProperty(value = "transactionFee")
+    private BigDecimal transactionFee;
 
     @JsonProperty(value = "availableBalance")
     private BigDecimal availableBalance;

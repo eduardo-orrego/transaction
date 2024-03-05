@@ -26,8 +26,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Mono<Account> putAccount(Account account) {
-        return accountClient.putAccount(account)
-            .switchIfEmpty(Mono.error(new RuntimeException("Numero de cuenta no existe")));
+        return accountClient.putAccount(account);
     }
 }
 

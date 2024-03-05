@@ -5,7 +5,8 @@ import lombok.Getter;
 @Getter
 public enum AccountMovementTypeEnum {
     DEPOSIT("DEPOSIT"),
-    WITHDRAWAL("WITHDRAWAL");
+    WITHDRAWAL("WITHDRAWAL"),
+    WIRE_TRANSFER("WIRE_TRANSFER");
 
     private final String value;
 
