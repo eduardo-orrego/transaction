@@ -1,6 +1,6 @@
 spring:
   application:
-    name: transaction
+    name: movement
   data:
     mongodb:
       uri: mongodb://localhost:27017
@@ -15,7 +15,9 @@ microservices:
       getCustomerById: http://localhost:8081/api/customers/{customerId}
   account:
     urlPaths:
-      getAccountById: http://localhost:8081/api/accounts/{customerId}
+      getAccountByNumber: http://localhost:8082/api/accounts/{accountNumber}
+      putAccount: http://localhost:8082/api/accounts
   credit:
     urlPaths:
-      getCreditById: http://localhost:8081/api/credits/{customerId}
+      getCreditByNumber: http://localhost:8083/api/credits/{accountNumber}
+      putCredit: http://localhost:8083/api/credits
