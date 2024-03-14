@@ -7,7 +7,7 @@ spring:
       database: demo
 
 server:
-  port: 8084
+  port: 8087
 
 microservices:
   customer:
@@ -15,9 +15,9 @@ microservices:
       getCustomerById: http://localhost:8081/api/customers/{customerId}
   account:
     urlPaths:
-      getAccountByNumber: http://localhost:8082/api/accounts/{accountNumber}
-      putAccount: http://localhost:8082/api/accounts
+      getAccountByNumber: http://localhost:8083/api/accounts/{accountNumber}
+      putAccount: http://localhost:8083/api/accounts/{accountId}
   credit:
     urlPaths:
-      getCreditByNumber: http://localhost:8083/api/credits/{accountNumber}
-      putCredit: http://localhost:8083/api/credits
+      getCreditByNumber: http://localhost:8085/api/credits/{accountNumber}
+      putCredit: http://localhost:8085/api/credits/{creditId}
