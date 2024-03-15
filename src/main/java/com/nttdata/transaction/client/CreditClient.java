@@ -34,4 +34,5 @@ public class CreditClient {
             .retrieve()
             .bodyToMono(Credit.class);
     }
+
 }
