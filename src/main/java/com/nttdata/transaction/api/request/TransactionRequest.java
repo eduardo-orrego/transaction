@@ -34,11 +34,11 @@ public class TransactionRequest {
     @NotBlank(message = "El campo 'customerId' no puede ser nulo")
     private String customerId;
 
-    @Valid
-    private CardRequest card;
-
     @NotNull(message = "El campo 'accountSource' no puede ser nulo")
     private BigInteger accountNumberSource;
+
+    @Valid
+    private CardRequest card;
 
     private BigInteger accountNumberTarget;
 

@@ -14,7 +14,6 @@ public class Customer {
 
     private String id;
     private String type;
-    private String subType;
     private String status;
     private Address address;
     private IdentificationDocument identificationDocument;
