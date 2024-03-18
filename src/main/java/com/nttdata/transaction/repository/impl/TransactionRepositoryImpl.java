@@ -3,6 +3,7 @@ package com.nttdata.transaction.repository.impl;
 import com.nttdata.transaction.model.TransactionEntity;
 import com.nttdata.transaction.repository.TransactionReactiveMongodb;
 import com.nttdata.transaction.repository.TransactionRepository;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,5 +58,19 @@ public class TransactionRepositoryImpl implements TransactionRepository {
     public Mono<Boolean> findExistsTransaction(String transactionId) {
         return transactionReactiveMongodb.existsById(transactionId)
             .doOnSuccess(exists -> log.info("Successful find exists transaction - Id: ".concat(transactionId)));
+    }
+
+    @Override
+    public Mono<Integer> countTransactions(BigInteger accountNumber) {
+        return transactionReactiveMongodb.countByAccountNumberSource(accountNumber)
+            .doOnSuccess(exists -> log.info("Successful count transactions - accountNumber: "
+                .concat(accountNumber.toString())));
+    }
+
+    @Override
+    public Mono<BigDecimal> sumAmountTransactions(BigInteger accountNumber, String type) {
+        return transactionReactiveMongodb.sumAmountByAccountNumberAndType(accountNumber, type)
+            .doOnSuccess(result -> log.info("Successful sum transactions amount - accountNumber: "
+                .concat(accountNumber.toString())));
     }
 }

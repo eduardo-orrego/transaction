@@ -5,11 +5,12 @@ import com.nttdata.transaction.builder.TransactionBuilder;
 import com.nttdata.transaction.business.AccountService;
 import com.nttdata.transaction.business.CreditService;
 import com.nttdata.transaction.business.TransactionService;
-import com.nttdata.transaction.client.AccountClient;
-import com.nttdata.transaction.client.CreditClient;
+import com.nttdata.transaction.enums.CreditTypeEnum;
+import com.nttdata.transaction.enums.TransactionTypeEnum;
 import com.nttdata.transaction.model.TransactionEntity;
 import com.nttdata.transaction.repository.TransactionRepository;
 import java.math.BigInteger;
+import java.time.LocalDate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,64 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Autowired
     private CreditService creditService;
+
+    @Override
+    public Mono<TransactionEntity> saveAccountTransaction(TransactionRequest transactionRequest) {
+        return accountService.findAccount(transactionRequest.getAccountNumberSource())
+            .flatMap(account -> transactionRepository.countTransactions(account.getAccountNumber())
+                .flatMap(counterTransactions -> {
+                    if (account.getMonthlyLimitMovement() > 0
+                        && counterTransactions > account.getMonthlyLimitMovement()) {
+                        return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                            "Maximum monthly transaction limit has been reached - Maximum limit :"
+                                .concat(account.getMonthlyLimitMovement().toString())));
+                    }
+
+                    if (account.getSpecificDayMonthMovement() > 0
+                        && !account.getSpecificDayMonthMovement().equals(LocalDate.now().getDayOfMonth())) {
+                        return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                            "Transactions are permitted on : ".concat(
+                                account.getSpecificDayMonthMovement().toString())));
+                    }
+
+                    return transactionRepository.saveTransaction(TransactionBuilder.toTransactionEntity(
+                        transactionRequest, account, counterTransactions));
+                }));
+    }
+
+    @Override
+    public Mono<TransactionEntity> saveCreditTransaction(TransactionRequest transactionRequest) {
+        return creditService.findCredit(transactionRequest.getAccountNumberSource())
+            .flatMap(credit -> transactionRepository.sumAmountTransactions(credit.getCreditNumber(),
+                    transactionRequest.getType().name())
+                .flatMap(sumAmountTransactions -> {
+                    if (credit.getType().equals(CreditTypeEnum.CREDIT.name())
+                        && transactionRequest.getType().equals(TransactionTypeEnum.PURCHASE)
+                        && sumAmountTransactions.add(transactionRequest.getAmount())
+                        .compareTo(credit.getCreditLimit()) > 0) {
+
+                        return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                            "The credit limit has been reached. : "
+                                .concat(credit.getCreditLimit().toString())));
+                    }
+                    return transactionRepository.saveTransaction(TransactionBuilder.toTransactionEntity(
+                        transactionRequest))
+                        .flatMap(transactionEntity -> {
+                            credit.setAvailableBalance(credit.getAvailableBalance().subtract(sumAmountTransactions));
+                            return creditService.updateCredit(credit)
+                                .flatMap(credit1 -> Mono.just(transactionEntity));
+                        });
+                }));
+    }
+
+    @Override
+    public Mono<TransactionEntity> updateTransaction(TransactionRequest transactionRequest, String transactionId) {
+        return transactionRepository.findTransaction(transactionId)
+            .flatMap(transactionEntity -> transactionRepository.saveTransaction(
+                TransactionBuilder.toTransactionEntity(transactionRequest, transactionEntity)))
+            .switchIfEmpty(Mono.defer(() -> Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                "Transaction not found - transactionId: ".concat(transactionId)))));
+    }
 
     @Override
     public Mono<TransactionEntity> findByTransactionNumber(BigInteger transactionNumber) {
@@ -56,22 +115,5 @@ public class TransactionServiceImpl implements TransactionService {
             );
     }
 
-    @Override
-    public Mono<TransactionEntity> saveTransaction(TransactionRequest transactionRequest) {
-        return accountService.findAccount(transactionRequest.getAccountNumberSource())
-            .flatMap(account -> transactionRepository.saveTransaction(
-                TransactionBuilder.toTransactionEntity(transactionRequest, null))
-            );
-    }
 
-    @Override
-    public Mono<TransactionEntity> updateTransaction(TransactionRequest transactionRequest, String transactionId) {
-        return transactionRepository.findExistsTransaction(transactionId)
-            .flatMap(aBoolean -> Boolean.TRUE.equals(aBoolean)
-                ? transactionRepository.saveTransaction(TransactionBuilder.toTransactionEntity(transactionRequest,
-                transactionId))
-                : Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "Transaction not found - transactionId: ".concat(transactionId)))
-            );
-    }
 }

@@ -33,6 +33,90 @@ public class TransactionController {
     private TransactionService transactionService;
 
     /**
+     * POST  : Create a new Account transaction
+     *
+     * @param transaction (required)
+     * @return Created (status code 201)
+     */
+    @Operation(
+        operationId = "transactionAccountSavePost",
+        summary = "Create a new account transaction",
+        responses = {
+            @ApiResponse(responseCode = "201", description = "Created", content = {
+                @Content(mediaType = "application/json", schema = @Schema(implementation = TransactionEntity.class))
+            })
+        }
+    )
+    @PostMapping(
+        value = "/accounts",
+        produces = {"application/json"},
+        consumes = {"application/json"}
+    )
+    public Mono<TransactionEntity> transactionAccountSavePost(
+        @Parameter(name = "TransactionRequest", description = "")
+        @Validated @RequestBody TransactionRequest transaction
+    ) {
+        return transactionService.saveTransaction(transaction);
+    }
+
+    /**
+     * POST  : Create a new credit transaction
+     *
+     * @param transaction (required)
+     * @return Created (status code 201)
+     */
+    @Operation(
+        operationId = "transactionCreditSavePost",
+        summary = "Create a new credit transaction",
+        responses = {
+            @ApiResponse(responseCode = "201", description = "Created", content = {
+                @Content(mediaType = "application/json", schema = @Schema(implementation = TransactionEntity.class))
+            })
+        }
+    )
+    @PostMapping(
+        value = "/credits",
+        produces = {"application/json"},
+        consumes = {"application/json"}
+    )
+    public Mono<TransactionEntity> transactionCreditSavePost(
+        @Parameter(name = "TransactionRequest", description = "")
+        @Validated @RequestBody TransactionRequest transaction
+    ) {
+        return transactionService.saveTransaction(transaction);
+    }
+
+    /**
+     * PUT /{transactionNumber} : Update a transaction exists
+     *
+     * @param transactionId (required)
+     * @param transaction (required)
+     * @return Ok (status code 200)
+     */
+    @Operation(
+        operationId = "transactionUpdatePut",
+        summary = "Update a transaction exists",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Updated", content = {
+                @Content(mediaType = "application/json", schema = @Schema(implementation = TransactionEntity.class))
+            })
+        }
+    )
+    @PutMapping(
+        value = "/{transactionId}",
+        produces = {"application/json"},
+        consumes = {"application/json"}
+    )
+    public Mono<TransactionEntity> transactionUpdatePut(
+        @Parameter(name = "transactionId", description = "", required = true, in = ParameterIn.PATH)
+        @PathVariable("transactionId") String transactionId,
+        @Parameter(name = "TransactionRequest", description = "")
+        @Validated @RequestBody TransactionRequest transaction
+    ) {
+        return transactionService.updateTransaction(transaction, transactionId);
+    }
+
+    /**
      * GET /{transactionNumber} : Get transaction about a specific transaction number
      *
      * @param transactionNumber (required)
@@ -85,62 +169,5 @@ public class TransactionController {
         return transactionService.findByCustomerId(customerId);
     }
 
-
-    /**
-     * POST  : Create a new transaction
-     *
-     * @param transaction (required)
-     * @return Created (status code 201)
-     */
-    @Operation(
-        operationId = "transactionSavePost",
-        summary = "Create a new transaction",
-        responses = {
-            @ApiResponse(responseCode = "201", description = "Created", content = {
-                @Content(mediaType = "application/json", schema = @Schema(implementation = TransactionEntity.class))
-            })
-        }
-    )
-    @PostMapping(
-        value = "",
-        produces = {"application/json"},
-        consumes = {"application/json"}
-    )
-    public Mono<TransactionEntity> transactionSavePost(
-        @Parameter(name = "TransactionRequest", description = "")
-        @Validated @RequestBody TransactionRequest transaction
-    ) {
-        return transactionService.saveTransaction(transaction);
-    }
-
-    /**
-     * PUT /{transactionNumber} : Update a transaction exists
-     *
-     * @param transactionId (required)
-     * @param transaction (required)
-     * @return Ok (status code 200)
-     */
-    @Operation(
-        operationId = "transactionUpdatePut",
-        summary = "Update a transaction exists",
-        responses = {
-            @ApiResponse(responseCode = "200", description = "Updated", content = {
-                @Content(mediaType = "application/json", schema = @Schema(implementation = TransactionEntity.class))
-            })
-        }
-    )
-    @PutMapping(
-        value = "/{transactionId}",
-        produces = {"application/json"},
-        consumes = {"application/json"}
-    )
-    public Mono<TransactionEntity> transactionUpdatePut(
-        @Parameter(name = "transactionId", description = "", required = true, in = ParameterIn.PATH)
-        @PathVariable("transactionId") String transactionId,
-        @Parameter(name = "TransactionRequest", description = "")
-        @Validated @RequestBody TransactionRequest transaction
-    ) {
-        return transactionService.updateTransaction(transaction, transactionId);
-    }
 
 }

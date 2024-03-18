@@ -40,6 +40,8 @@ public class TransactionRequest {
     @Valid
     private CardRequest card;
 
+    private BigDecimal commission;
+
     private BigInteger accountNumberTarget;
 
 }

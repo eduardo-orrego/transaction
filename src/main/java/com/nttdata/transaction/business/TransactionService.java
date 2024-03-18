@@ -14,7 +14,9 @@ public interface TransactionService {
 
     Flux<TransactionEntity> findByCustomerId(String customerId);
 
-    Mono<TransactionEntity> saveTransaction(TransactionRequest transactionRequest);
+    Mono<TransactionEntity> saveAccountTransaction(TransactionRequest transactionRequest);
+
+    Mono<TransactionEntity> saveCreditTransaction(TransactionRequest transactionRequest);
 
     Mono<TransactionEntity> updateTransaction(TransactionRequest transactionRequest, String transactionId);
 }

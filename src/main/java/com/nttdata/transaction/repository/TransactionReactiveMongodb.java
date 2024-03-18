@@ -1,6 +1,7 @@
 package com.nttdata.transaction.repository;
 
 import com.nttdata.transaction.model.TransactionEntity;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import org.springframework.stereotype.Repository;
@@ -15,5 +16,10 @@ public interface TransactionReactiveMongodb extends ReactiveMongoRepository<Tran
     Flux<TransactionEntity> findByAccountNumberSource(BigInteger accountNumber);
 
     Flux<TransactionEntity> findByCustomerId(String customerId);
+
+    Mono<Integer> countByAccountNumberSource(BigInteger accountNumber);
+
+    Mono<BigDecimal> sumAmountByAccountNumberAndType(BigInteger accountNumber, String type);
+
 
 }

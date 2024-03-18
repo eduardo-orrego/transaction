@@ -29,8 +29,7 @@ public class TransactionEntity {
     private BigInteger cardNumber;
     private BigInteger accountNumberSource;
     private BigInteger accountNumberTarget;
-    private BigDecimal maintenanceCommission;
-    private BigDecimal commissionMovement;
+    private BigDecimal commission;
     private LocalDateTime dateCreated;
     private LocalDateTime lastUpdated;
 
