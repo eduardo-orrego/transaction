@@ -1,7 +1,6 @@
 package com.nttdata.transaction.api.request;
 
 import com.nttdata.transaction.enums.CardTypeEnum;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigInteger;
 import lombok.AllArgsConstructor;

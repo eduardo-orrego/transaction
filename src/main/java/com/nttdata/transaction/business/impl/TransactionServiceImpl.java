@@ -1,9 +1,7 @@
 package com.nttdata.transaction.business.impl;
 
-import com.nttdata.transaction.api.request.TransactionRequest;
-import com.nttdata.transaction.builder.TransactionBuilder;
 import com.nttdata.transaction.business.TransactionService;
-import com.nttdata.transaction.model.TransactionEntity;
+import com.nttdata.transaction.model.Transaction;
 import com.nttdata.transaction.repository.TransactionRepository;
 import java.math.BigInteger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,17 +17,9 @@ public class TransactionServiceImpl implements TransactionService {
     @Autowired
     private TransactionRepository transactionRepository;
 
-    @Override
-    public Mono<TransactionEntity> updateTransaction(TransactionRequest transactionRequest, String transactionId) {
-        return transactionRepository.findTransaction(transactionId)
-            .flatMap(transactionEntity -> transactionRepository.saveTransaction(
-                TransactionBuilder.toTransactionEntity(transactionRequest, transactionEntity)))
-            .switchIfEmpty(Mono.defer(() -> Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
-                "Transaction not found - transactionId: ".concat(transactionId)))));
-    }
 
     @Override
-    public Mono<TransactionEntity> findByTransactionNumber(BigInteger transactionNumber) {
+    public Mono<Transaction> findByTransactionNumber(BigInteger transactionNumber) {
         return transactionRepository.findTransaction(transactionNumber)
             .switchIfEmpty(Mono.defer(() ->
                 Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
@@ -38,7 +28,7 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public Flux<TransactionEntity> findByAccountNumberSource(BigInteger accountNumberSource) {
+    public Flux<Transaction> findByAccountNumberSource(BigInteger accountNumberSource) {
         return transactionRepository.findTransactions(accountNumberSource)
             .switchIfEmpty(Mono.defer(() ->
                 Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
@@ -47,7 +37,7 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public Flux<TransactionEntity> findByCustomerDocument(BigInteger customerDocument) {
+    public Flux<Transaction> findByCustomerDocument(BigInteger customerDocument) {
         return transactionRepository.findTransactionsByCustomerDocument(customerDocument)
             .switchIfEmpty(Mono.defer(() ->
                 Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,

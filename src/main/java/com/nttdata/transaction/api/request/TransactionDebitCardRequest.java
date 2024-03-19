@@ -1,6 +1,6 @@
 package com.nttdata.transaction.api.request;
 
-import com.nttdata.transaction.enums.TransactionCreditTypeEnum;
+import com.nttdata.transaction.enums.TransactionDebitCardTypeEnum;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -11,15 +11,15 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TransactionCreditRequest {
+public class TransactionDebitCardRequest {
 
     @NotNull(message = "El campo 'type' no puede ser nulo")
-    private TransactionCreditTypeEnum type;
+    private TransactionDebitCardTypeEnum type;
 
     @NotNull(message = "El campo 'amount' no puede ser nulo")
     private BigDecimal amount;
 
-    @NotNull(message = "El campo 'accountNumber' no puede ser nulo")
-    private BigInteger accountNumber;
+    @NotNull(message = "El campo 'cardNumber' no puede ser vacío")
+    private BigInteger cardNumber;
 
 }

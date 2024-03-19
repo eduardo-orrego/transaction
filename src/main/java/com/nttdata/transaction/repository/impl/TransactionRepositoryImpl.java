@@ -1,6 +1,6 @@
 package com.nttdata.transaction.repository.impl;
 
-import com.nttdata.transaction.model.TransactionEntity;
+import com.nttdata.transaction.model.Transaction;
 import com.nttdata.transaction.repository.TransactionReactiveMongodb;
 import com.nttdata.transaction.repository.TransactionRepository;
 import java.math.BigDecimal;
@@ -19,14 +19,14 @@ public class TransactionRepositoryImpl implements TransactionRepository {
     private TransactionReactiveMongodb transactionReactiveMongodb;
 
     @Override
-    public Mono<TransactionEntity> findTransaction(String transactionId) {
+    public Mono<Transaction> findTransaction(String transactionId) {
         return transactionReactiveMongodb.findById(transactionId)
             .doOnSuccess(transaction -> log.info("Successful save transaction - transactionId: "
                 .concat(transactionId)));
     }
 
     @Override
-    public Mono<TransactionEntity> findTransaction(BigInteger transactionNumber) {
+    public Mono<Transaction> findTransaction(BigInteger transactionNumber) {
         return transactionReactiveMongodb.findByNumber(transactionNumber)
             .doOnSuccess(transaction -> log.info("Successful save transaction - transactionNumber: "
                 .concat(transactionNumber.toString())));
@@ -34,7 +34,7 @@ public class TransactionRepositoryImpl implements TransactionRepository {
     }
 
     @Override
-    public Flux<TransactionEntity> findTransactions(BigInteger accountSource) {
+    public Flux<Transaction> findTransactions(BigInteger accountSource) {
         return transactionReactiveMongodb.findByAccountNumberSource(accountSource)
             .doOnComplete(() -> log.info("Successful find transactions  - accountSource "
                 .concat(accountSource.toString())));
@@ -42,7 +42,7 @@ public class TransactionRepositoryImpl implements TransactionRepository {
     }
 
     @Override
-    public Flux<TransactionEntity> findTransactionsByCustomerDocument(BigInteger customerDocument) {
+    public Flux<Transaction> findTransactionsByCustomerDocument(BigInteger customerDocument) {
         return transactionReactiveMongodb.findByCustomerDocument(customerDocument)
             .doOnComplete(() -> log.info("Successful find transactions  - customerDocument "
                 .concat(customerDocument.toString())));
@@ -50,7 +50,7 @@ public class TransactionRepositoryImpl implements TransactionRepository {
     }
 
     @Override
-    public Mono<TransactionEntity> saveTransaction(TransactionEntity transactionEntity) {
+    public Mono<Transaction> saveTransaction(Transaction transactionEntity) {
         return transactionReactiveMongodb.save(transactionEntity)
             .doOnSuccess(transaction -> log.info("Successful save transaction - Id: ".concat(transaction.getId())));
     }

@@ -24,12 +24,13 @@ public class Transaction {
     private String transactionType;
     private BigDecimal amount;
     private String currency;
-    private TransactionAccount source;
-    private TransactionAccount target;
-    private BigDecimal maintenanceCommission;
-    private BigDecimal commissionMovement;
+    private BigInteger customerDocument;
+    private String cardType;
+    private BigInteger cardNumber;
+    private BigInteger accountNumberSource;
+    private BigInteger accountNumberTarget;
+    private BigDecimal commission;
     private LocalDateTime dateCreated;
     private LocalDateTime lastUpdated;
 
 }
-

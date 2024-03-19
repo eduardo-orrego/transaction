@@ -1,6 +1,6 @@
 package com.nttdata.transaction.repository;
 
-import com.nttdata.transaction.model.TransactionEntity;
+import com.nttdata.transaction.model.Transaction;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import org.springframework.data.mongodb.repository.Aggregation;
@@ -10,13 +10,13 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Repository
-public interface TransactionReactiveMongodb extends ReactiveMongoRepository<TransactionEntity, String> {
+public interface TransactionReactiveMongodb extends ReactiveMongoRepository<Transaction, String> {
 
-    Mono<TransactionEntity> findByNumber(BigInteger transactionNumber);
+    Mono<Transaction> findByNumber(BigInteger transactionNumber);
 
-    Flux<TransactionEntity> findByAccountNumberSource(BigInteger accountNumber);
+    Flux<Transaction> findByAccountNumberSource(BigInteger accountNumber);
 
-    Flux<TransactionEntity> findByCustomerDocument(BigInteger customerDocument);
+    Flux<Transaction> findByCustomerDocument(BigInteger customerDocument);
 
     @Aggregation(pipeline = {
         "{ $match: { numberAccount: ?0 } }",

@@ -1,6 +1,6 @@
 package com.nttdata.transaction.repository;
 
-import com.nttdata.transaction.model.TransactionEntity;
+import com.nttdata.transaction.model.Transaction;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import reactor.core.publisher.Flux;
@@ -8,15 +8,15 @@ import reactor.core.publisher.Mono;
 
 public interface TransactionRepository {
 
-    Mono<TransactionEntity> findTransaction(String transactionId);
+    Mono<Transaction> findTransaction(String transactionId);
 
-    Mono<TransactionEntity> findTransaction(BigInteger transactionNumber);
+    Mono<Transaction> findTransaction(BigInteger transactionNumber);
 
-    Flux<TransactionEntity> findTransactions(BigInteger accountNumberSource);
+    Flux<Transaction> findTransactions(BigInteger accountNumberSource);
 
-    Flux<TransactionEntity> findTransactionsByCustomerDocument(BigInteger customerDocument);
+    Flux<Transaction> findTransactionsByCustomerDocument(BigInteger customerDocument);
 
-    Mono<TransactionEntity> saveTransaction(TransactionEntity transactionEntity);
+    Mono<Transaction> saveTransaction(Transaction transaction);
 
     Mono<Integer> countTransactions(BigInteger accountNumber);
 
