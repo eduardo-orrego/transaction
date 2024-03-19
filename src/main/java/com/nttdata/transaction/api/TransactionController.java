@@ -1,6 +1,8 @@
 package com.nttdata.transaction.api;
 
 import com.nttdata.transaction.api.request.TransactionRequest;
+import com.nttdata.transaction.business.TransactionAccountService;
+import com.nttdata.transaction.business.TransactionCreditService;
 import com.nttdata.transaction.business.TransactionService;
 import com.nttdata.transaction.model.TransactionEntity;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,8 +31,16 @@ import reactor.core.publisher.Mono;
 @RequestMapping(value = "/api/transactions")
 public class TransactionController {
 
-    @Autowired
-    private TransactionService transactionService;
+    private final TransactionService transactionService;
+    private final TransactionAccountService transactionAccountService;
+    private final TransactionCreditService transactionCreditService;
+
+    public TransactionController(TransactionService transactionService,
+        TransactionAccountService transactionAccountService, TransactionCreditService transactionCreditService) {
+        this.transactionService = transactionService;
+        this.transactionAccountService = transactionAccountService;
+        this.transactionCreditService = transactionCreditService;
+    }
 
     /**
      * POST  : Create a new Account transaction
@@ -56,7 +66,7 @@ public class TransactionController {
         @Parameter(name = "TransactionRequest", description = "")
         @Validated @RequestBody TransactionRequest transaction
     ) {
-        return transactionService.saveTransaction(transaction);
+        return transactionAccountService.saveAccountTransaction(transaction);
     }
 
     /**
@@ -83,7 +93,7 @@ public class TransactionController {
         @Parameter(name = "TransactionRequest", description = "")
         @Validated @RequestBody TransactionRequest transaction
     ) {
-        return transactionService.saveTransaction(transaction);
+        return transactionCreditService.saveCreditTransaction(transaction);
     }
 
     /**
@@ -145,7 +155,7 @@ public class TransactionController {
     /**
      * GET : Get a list of transactions for the customer
      *
-     * @param customerId (required)
+     * @param documentCustomer (required)
      * @return OK (status code 200)
      */
     @Operation(
@@ -163,10 +173,10 @@ public class TransactionController {
         produces = {"application/json"}
     )
     public Flux<TransactionEntity> transactionsCustomerGet(
-        @NotNull @Parameter(name = "customerId", description = "", required = true, in = ParameterIn.QUERY)
-        @Validated @RequestParam(value = "customerId") String customerId
+        @NotNull @Parameter(name = "documentCustomer", description = "", required = true, in = ParameterIn.QUERY)
+        @Validated @RequestParam(value = "documentCustomer") BigInteger documentCustomer
     ) {
-        return transactionService.findByCustomerId(customerId);
+        return transactionService.findByCustomerDocument(documentCustomer);
     }
 
 

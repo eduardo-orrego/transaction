@@ -15,7 +15,7 @@ public class TransactionBuilder {
     TransactionBuilder() {
     }
 
-    public static TransactionEntity toTransactionEntity(TransactionRequest transactionRequest, Account account,
+    public static TransactionEntity toTransactionAccountEntity(TransactionRequest transactionRequest, Account account,
         Integer counterTransactions) {
         return TransactionEntity.builder()
             .number(Objects.nonNull(transactionRequest.getNumber())
@@ -25,7 +25,7 @@ public class TransactionBuilder {
             .transactionType(transactionRequest.getType().name())
             .amount(transactionRequest.getAmount())
             .currency(transactionRequest.getCurrency().name())
-            .customerId(transactionRequest.getCustomerId())
+            .customerDocument(transactionRequest.getCustomerDocument())
             .cardType(Objects.nonNull(transactionRequest.getCard())
                 ? transactionRequest.getCard().getType().name()
                 : null)
@@ -44,7 +44,7 @@ public class TransactionBuilder {
             .build();
     }
 
-    public static TransactionEntity toTransactionEntity(TransactionRequest transactionRequest) {
+    public static TransactionEntity toTransactionCreditEntity(TransactionRequest transactionRequest) {
         return TransactionEntity.builder()
             .number(Objects.nonNull(transactionRequest.getNumber())
                 ? transactionRequest.getNumber()
@@ -53,7 +53,7 @@ public class TransactionBuilder {
             .transactionType(transactionRequest.getType().name())
             .amount(transactionRequest.getAmount())
             .currency(transactionRequest.getCurrency().name())
-            .customerId(transactionRequest.getCustomerId())
+            .customerDocument(transactionRequest.getCustomerDocument())
             .cardType(Objects.nonNull(transactionRequest.getCard())
                 ? transactionRequest.getCard().getType().name()
                 : null)
@@ -66,7 +66,7 @@ public class TransactionBuilder {
                 : null)
             .commission(Objects.nonNull(transactionRequest.getCommission())
                 ? transactionRequest.getCommission()
-                : null)
+                : BigDecimal.valueOf(0.00))
             .dateCreated(LocalDateTime.now())
             .lastUpdated(LocalDateTime.now())
             .build();
@@ -84,7 +84,7 @@ public class TransactionBuilder {
             .transactionType(transactionRequest.getType().name())
             .amount(transactionRequest.getAmount())
             .currency(transactionRequest.getCurrency().name())
-            .customerId(transactionRequest.getCustomerId())
+            .customerDocument(transactionRequest.getCustomerDocument())
             .cardType(Objects.nonNull(transactionRequest.getCard())
                 ? transactionRequest.getCard().getType().name()
                 : transactionEntity.getCardType())
@@ -118,9 +118,8 @@ public class TransactionBuilder {
                 return account.getCommissionMovement();
 
             if (transactionRequest.getType().equals(TransactionTypeEnum.MAINTENANCE_CHARGE))
-                return account.getCommissionMovement();
+                return account.getMaintenanceCommission();
         }
-
 
         return BigDecimal.valueOf(0.00);
     }

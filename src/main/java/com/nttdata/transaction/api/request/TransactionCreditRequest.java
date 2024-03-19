@@ -2,9 +2,9 @@ package com.nttdata.transaction.api.request;
 
 import com.nttdata.transaction.enums.CurrencyTypeEnum;
 import com.nttdata.transaction.enums.StatusTypeEnum;
-import com.nttdata.transaction.enums.TransactionTypeEnum;
+import com.nttdata.transaction.enums.TransactionAccountTypeEnum;
+import com.nttdata.transaction.enums.TransactionCreditTypeEnum;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -15,12 +15,12 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TransactionRequest {
+public class TransactionCreditRequest {
 
     private BigInteger number;
 
     @NotNull(message = "El campo 'type' no puede ser nulo")
-    private TransactionTypeEnum type;
+    private TransactionCreditTypeEnum type;
 
     @NotNull(message = "El campo 'status' no puede ser nulo")
     private StatusTypeEnum status;
@@ -45,4 +45,3 @@ public class TransactionRequest {
     private BigInteger accountNumberTarget;
 
 }
-

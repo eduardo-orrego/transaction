@@ -24,7 +24,7 @@ public class TransactionEntity {
     private String transactionType;
     private BigDecimal amount;
     private String currency;
-    private String customerId;
+    private BigInteger customerDocument;
     private String cardType;
     private BigInteger cardNumber;
     private BigInteger accountNumberSource;

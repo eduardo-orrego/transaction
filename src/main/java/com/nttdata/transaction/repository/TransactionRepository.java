@@ -14,14 +14,12 @@ public interface TransactionRepository {
 
     Flux<TransactionEntity> findTransactions(BigInteger accountNumberSource);
 
-    Flux<TransactionEntity> findTransactions(String customerId);
+    Flux<TransactionEntity> findTransactionsByCustomerDocument(BigInteger customerDocument);
 
     Mono<TransactionEntity> saveTransaction(TransactionEntity transactionEntity);
-
-    Mono<Boolean> findExistsTransaction(String transactionId);
 
     Mono<Integer> countTransactions(BigInteger accountNumber);
 
 
-    Mono<BigDecimal> sumAmountTransactions(BigInteger accountNumber, String type);
+    Mono<BigDecimal> sumAmountTransactions(String type, BigInteger accountNumber);
 }

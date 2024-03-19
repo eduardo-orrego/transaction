@@ -12,11 +12,7 @@ public interface TransactionService {
 
     Flux<TransactionEntity> findByAccountNumberSource(BigInteger accountNumberSource);
 
-    Flux<TransactionEntity> findByCustomerId(String customerId);
-
-    Mono<TransactionEntity> saveAccountTransaction(TransactionRequest transactionRequest);
-
-    Mono<TransactionEntity> saveCreditTransaction(TransactionRequest transactionRequest);
+    Flux<TransactionEntity> findByCustomerDocument(BigInteger customerDocument);
 
     Mono<TransactionEntity> updateTransaction(TransactionRequest transactionRequest, String transactionId);
 }

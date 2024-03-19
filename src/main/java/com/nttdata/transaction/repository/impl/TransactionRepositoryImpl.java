@@ -42,9 +42,10 @@ public class TransactionRepositoryImpl implements TransactionRepository {
     }
 
     @Override
-    public Flux<TransactionEntity> findTransactions(String customerId) {
-        return transactionReactiveMongodb.findByCustomerId(customerId)
-            .doOnComplete(() -> log.info("Successful find transactions  - customerId ".concat(customerId)));
+    public Flux<TransactionEntity> findTransactionsByCustomerDocument(BigInteger customerDocument) {
+        return transactionReactiveMongodb.findByCustomerDocument(customerDocument)
+            .doOnComplete(() -> log.info("Successful find transactions  - customerDocument "
+                .concat(customerDocument.toString())));
 
     }
 
@@ -55,12 +56,6 @@ public class TransactionRepositoryImpl implements TransactionRepository {
     }
 
     @Override
-    public Mono<Boolean> findExistsTransaction(String transactionId) {
-        return transactionReactiveMongodb.existsById(transactionId)
-            .doOnSuccess(exists -> log.info("Successful find exists transaction - Id: ".concat(transactionId)));
-    }
-
-    @Override
     public Mono<Integer> countTransactions(BigInteger accountNumber) {
         return transactionReactiveMongodb.countByAccountNumberSource(accountNumber)
             .doOnSuccess(exists -> log.info("Successful count transactions - accountNumber: "
@@ -68,8 +63,8 @@ public class TransactionRepositoryImpl implements TransactionRepository {
     }
 
     @Override
-    public Mono<BigDecimal> sumAmountTransactions(BigInteger accountNumber, String type) {
-        return transactionReactiveMongodb.sumAmountByAccountNumberAndType(accountNumber, type)
+    public Mono<BigDecimal> sumAmountTransactions(String type, BigInteger accountNumber) {
+        return transactionReactiveMongodb.sumAmountByTypeAndAccountNumberSource(type, accountNumber)
             .doOnSuccess(result -> log.info("Successful sum transactions amount - accountNumber: "
                 .concat(accountNumber.toString())));
     }
