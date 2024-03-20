@@ -1,4 +1,4 @@
-package com.nttdata.transaction.model.account;
+package com.nttdata.transaction.model.debicard;
 
 import java.math.BigInteger;
 import lombok.AllArgsConstructor;
@@ -10,9 +10,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AccountHolder {
+public class AccountAssociated {
 
-    private BigInteger customerDocument;
-    private String holderType;
+    private String associatedType;
+    private BigInteger accountNumber;
 
 }

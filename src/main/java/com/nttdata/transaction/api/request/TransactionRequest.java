@@ -31,14 +31,16 @@ public class TransactionRequest {
     @NotNull(message = "El campo 'currency' no puede ser nulo")
     private CurrencyTypeEnum currency;
 
-    @NotBlank(message = "El campo 'customerId' no puede ser nulo")
-    private String customerId;
+    @NotNull(message = "El campo 'customerDocument' no puede ser nulo")
+    private BigInteger customerDocument;
+
+    @NotNull(message = "El campo 'accountSource' no puede ser nulo")
+    private BigInteger accountNumberSource;
 
     @Valid
     private CardRequest card;
 
-    @NotNull(message = "El campo 'accountSource' no puede ser nulo")
-    private BigInteger accountNumberSource;
+    private BigDecimal commission;
 
     private BigInteger accountNumberTarget;
 

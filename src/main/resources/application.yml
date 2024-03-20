@@ -20,4 +20,11 @@ microservices:
   credit:
     urlPaths:
       getCreditByNumber: http://localhost:8085/api/credits/{accountNumber}
+      getCreditByCustomerDocument: http://localhost:8085/api/credits
       putCredit: http://localhost:8085/api/credits/{creditId}
+  debitCards:
+    urlPaths:
+      getDebitCards: http://localhost:8084/api/debitCards
+  creditCards:
+    urlPaths:
+      getCreditCards: http://localhost:8086/api/creditCards

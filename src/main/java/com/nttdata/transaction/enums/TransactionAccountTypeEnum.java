@@ -1,8 +1,6 @@
 package com.nttdata.transaction.enums;
 
-public enum TransactionTypeEnum {
-    PURCHASE,
-    PAYMENT,
+public enum TransactionAccountTypeEnum {
     DEPOSIT,
     WITHDRAWAL,
     WIRE_TRANSFER,
