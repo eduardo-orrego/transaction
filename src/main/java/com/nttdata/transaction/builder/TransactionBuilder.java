@@ -9,7 +9,6 @@ import com.nttdata.transaction.enums.AssociatedTypeEnum;
 import com.nttdata.transaction.enums.CardTypeEnum;
 import com.nttdata.transaction.enums.StatusTypeEnum;
 import com.nttdata.transaction.enums.TransactionAccountTypeEnum;
-import com.nttdata.transaction.enums.TransactionTypeEnum;
 import com.nttdata.transaction.model.Credit;
 import com.nttdata.transaction.model.CreditCard;
 import com.nttdata.transaction.model.Transaction;
@@ -27,7 +26,7 @@ public class TransactionBuilder {
     }
 
     public static Transaction toTransactionEntity(TransactionAccountRequest transactionRequest,
-        Account account, Integer counterTransactions) {
+        Account account) {
         return Transaction.builder()
             .number(generateNumber())
             .transactionType(transactionRequest.getType().name())
@@ -36,7 +35,7 @@ public class TransactionBuilder {
             .status(StatusTypeEnum.ACTIVE.name())
             .currency(account.getCurrency())
             .customerDocument(getCustomerDocumentPrimary(account.getAccountHolders()))
-            .commission(getCommission(account, transactionRequest.getType().name(), counterTransactions))
+            .commission(BigDecimal.valueOf(0.00))
             .dateCreated(LocalDateTime.now())
             .lastUpdated(LocalDateTime.now())
             .build();
@@ -95,17 +94,17 @@ public class TransactionBuilder {
     }
 
     public static Transaction toTransactionEntity(TransactionTransferRequest transactionRequest,
-        Account account, Integer counterTransactions) {
+        Account account) {
         return Transaction.builder()
             .number(generateNumber())
-            .transactionType(TransactionTypeEnum.WIRE_TRANSFER.name())
+            .transactionType(TransactionAccountTypeEnum.WIRE_TRANSFER.name())
             .amount(transactionRequest.getAmount())
             .accountNumberSource(transactionRequest.getAccountNumberSource())
             .accountNumberTarget(transactionRequest.getAccountNumberTarget())
             .status(StatusTypeEnum.ACTIVE.name())
             .currency(account.getCurrency())
             .customerDocument(getCustomerDocumentPrimary(account.getAccountHolders()))
-            .commission(getCommission(account, TransactionTypeEnum.WIRE_TRANSFER.name(), counterTransactions))
+            .commission(new BigDecimal("0.00"))
             .dateCreated(LocalDateTime.now())
             .lastUpdated(LocalDateTime.now())
             .build();
@@ -124,19 +123,5 @@ public class TransactionBuilder {
             .orElse(BigInteger.valueOf(0L));
     }
 
-    private static BigDecimal getCommission(Account account, String transactionType, Integer counterTransactions) {
-
-        if (counterTransactions > account.getLimitFreeMovements()) {
-            if (transactionType.equals(TransactionAccountTypeEnum.DEPOSIT.name())
-                || transactionType.equals(TransactionAccountTypeEnum.WITHDRAWAL.name())
-                || transactionType.equals(TransactionAccountTypeEnum.WIRE_TRANSFER.name()))
-                return account.getCommissionMovement();
-
-            if (transactionType.equals(TransactionAccountTypeEnum.MAINTENANCE_CHARGE.name()))
-                return account.getMaintenanceCommission();
-        }
-
-        return BigDecimal.valueOf(0.00);
-    }
 
 }

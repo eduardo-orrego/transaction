@@ -7,7 +7,9 @@ import com.nttdata.transaction.builder.TransactionBuilder;
 import com.nttdata.transaction.business.AccountService;
 import com.nttdata.transaction.business.DebitCardService;
 import com.nttdata.transaction.business.TransactionDebitService;
+import com.nttdata.transaction.enums.AccountTypeEnum;
 import com.nttdata.transaction.enums.TransactionAccountTypeEnum;
+import com.nttdata.transaction.enums.TransactionTypeEnum;
 import com.nttdata.transaction.model.Transaction;
 import com.nttdata.transaction.model.account.Account;
 import com.nttdata.transaction.model.debicard.AccountAssociated;
@@ -41,45 +43,32 @@ public class TransactionDebitServiceImpl implements TransactionDebitService {
     public Mono<Transaction> saveTransferTransaction(TransactionTransferRequest transactionRequest) {
         return this.validationAccountAvailableBalance(transactionRequest.getAccountNumberSource(),
                 transactionRequest.getAmount())
+            .flatMap(accountSource -> this.validationAccountLimitMovement(accountSource,
+                TransactionTypeEnum.WIRE_TRANSFER.name()))
             .flatMap(accountSource -> accountService.findAccount(transactionRequest.getAccountNumberTarget())
-                .flatMap(accountTarget -> this.validationAccountLimitMovement(accountSource)
-                    .map(accountValidated -> TransactionBuilder.toTransactionEntity(
-                        transactionRequest, accountValidated, 0))
+                .flatMap(accountTarget -> this.calculationTransactionCommission(TransactionBuilder
+                        .toTransactionEntity(transactionRequest, accountSource), accountSource)
                     .flatMap(transactionRepository::saveTransaction)
-                    .flatMap(transaction ->
-
-                        this.updateAccountAvailableBalance(accountSource, transaction.getAmount(),
-                                transaction.getTransactionType())
-                            .flatMap(account ->
-                                this.updateAccountAvailableBalance(accountTarget, transaction.getAmount(),
-                                    transaction.getTransactionType())
-                            )
-                            .thenReturn(transaction)
-                    )));
-    }
-
-
-    private Mono<Account> updateAccountAvailableBalance(Account account, BigDecimal transactionAmount,
-        String transactionType) {
-
-        account.setAvailableBalance(transactionType.equals(TransactionAccountTypeEnum.DEPOSIT.name())
-            ? account.getAvailableBalance().add(transactionAmount)
-            : account.getAvailableBalance().subtract(transactionAmount));
-
-        return accountService.updateAccount(account);
+                    .flatMap(transaction -> this.updateAccountAvailableBalance(accountSource, transaction.getAmount(),
+                            transaction.getTransactionType())
+                        .flatMap(account -> this.updateAccountAvailableBalance(accountTarget, transaction.getAmount(),
+                            TransactionAccountTypeEnum.DEPOSIT.name()))
+                        .thenReturn(transaction)
+                    )
+                ));
     }
 
     @Override
     public Mono<Transaction> saveAccountTransaction(TransactionAccountRequest transactionRequest) {
         return this.validationAccountAvailableBalance(transactionRequest.getAccountNumberSource(),
                 transactionRequest.getAmount())
-            .flatMap(this::validationAccountLimitMovement)
-            .flatMap(accountValidated -> transactionRepository.saveTransaction(TransactionBuilder.toTransactionEntity(
-                    transactionRequest, accountValidated, 0))
-                .flatMap(transaction ->
-                    this.updateAccountAvailableBalance(accountValidated, transaction.getAmount(),
-                            transaction.getTransactionType())
-                        .thenReturn(transaction)
+            .flatMap(account -> this.validationAccountLimitMovement(account, transactionRequest.getType().name()))
+            .flatMap(account -> this.calculationTransactionCommission(TransactionBuilder
+                    .toTransactionEntity(transactionRequest, account), account)
+                .flatMap(transactionRepository::saveTransaction)
+                .flatMap(transaction -> this.updateAccountAvailableBalance(account, transaction.getAmount(),
+                        transaction.getTransactionType())
+                    .thenReturn(transaction)
                 ));
     }
 
@@ -89,14 +78,15 @@ public class TransactionDebitServiceImpl implements TransactionDebitService {
         return debitCardService.findDebitCard(transactionRequest.getCardNumber())
             .flatMap(debitCard -> this.validationAccountAvailableBalance(debitCard.getAccountsAssociated(),
                     debitCard.getCardNumber(), transactionRequest.getAmount())
-                .flatMap(this::validationAccountLimitMovement)
-                .flatMap(account -> transactionRepository.saveTransaction(
-                        TransactionBuilder.toTransactionEntity(transactionRequest, debitCard, account))
-                    .flatMap(transaction ->
-                        this.updateAccountAvailableBalance(account, transaction.getAmount(),
-                                transaction.getTransactionType())
-                            .thenReturn(transaction)
-                    )));
+                .flatMap(account -> this.validationAccountLimitMovement(account, transactionRequest.getType().name()))
+                .flatMap(account -> this.calculationTransactionCommission(TransactionBuilder
+                        .toTransactionEntity(transactionRequest, debitCard, account), account)
+                    .flatMap(transactionRepository::saveTransaction)
+                    .flatMap(transaction -> this.updateAccountAvailableBalance(account, transaction.getAmount(),
+                            transaction.getTransactionType())
+                        .thenReturn(transaction)
+                    ))
+            );
     }
 
     private Mono<Account> validationAccountAvailableBalance(List<AccountAssociated> accounts,
@@ -108,6 +98,43 @@ public class TransactionDebitServiceImpl implements TransactionDebitService {
             .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
                 "Cuentas Bancarias sin saldo suficiente - cardNumber: " + cardNumber.toString())));
 
+    }
+
+    private Mono<Transaction> calculationTransactionCommission(Transaction transaction, Account account) {
+
+        return transactionRepository.countTransactions(account.getAccountNumber())
+            .flatMap(counterTransactions -> {
+
+                if (transaction.getTransactionType().equals(TransactionAccountTypeEnum.MAINTENANCE_CHARGE.name()))
+                    transaction.setCommission(account.getMaintenanceCommission());
+                else if (counterTransactions > account.getLimitFreeMovements())
+                    transaction.setCommission(account.getCommissionMovement());
+
+                return Mono.just(transaction);
+            });
+    }
+
+    private Mono<Account> validationAccountLimitMovement(Account account, String transactionType) {
+
+        return transactionRepository.countTransactions(account.getAccountNumber())
+            .flatMap(counterTransactions -> {
+                if (account.getMonthlyLimitMovement() > 0
+                    && counterTransactions > account.getMonthlyLimitMovement()) {
+                    return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Maximum monthly transaction limit has been reached - Maximum limit :"
+                            .concat(account.getMonthlyLimitMovement().toString())));
+                }
+
+                if (transactionType.equals(AccountTypeEnum.TERM_DEPOSIT.name())
+                    && account.getSpecificDayMonthMovement() > 0
+                    && !account.getSpecificDayMonthMovement().equals(LocalDate.now().getDayOfMonth())) {
+                    return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Transactions are permitted on : ".concat(
+                            account.getSpecificDayMonthMovement().toString())));
+                }
+
+                return Mono.just(account);
+            });
     }
 
     private Flux<AccountAssociated> getAccounts(List<AccountAssociated> accountAssociatedList) {
@@ -123,41 +150,15 @@ public class TransactionDebitServiceImpl implements TransactionDebitService {
                 "Cuenta bancaria sin saldo suficiente - accountNumber: " + accountNumber.toString())));
     }
 
+    private Mono<Account> updateAccountAvailableBalance(Account account, BigDecimal transactionAmount,
+        String transactionType) {
 
-    private Mono<Account> validationAccountLimitMovement(Account account) {
+        account.setAvailableBalance(transactionType.equals(TransactionAccountTypeEnum.DEPOSIT.name())
+            ? account.getAvailableBalance().add(transactionAmount)
+            : account.getAvailableBalance().subtract(transactionAmount));
 
-        return transactionRepository.countTransactions(account.getAccountNumber())
-            .flatMap(counterTransactions -> {
-                if (account.getMonthlyLimitMovement() > 0
-                    && counterTransactions > account.getMonthlyLimitMovement()) {
-                    return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Maximum monthly transaction limit has been reached - Maximum limit :"
-                            .concat(account.getMonthlyLimitMovement().toString())));
-                }
-
-                if (account.getSpecificDayMonthMovement() > 0
-                    && !account.getSpecificDayMonthMovement().equals(LocalDate.now().getDayOfMonth())) {
-                    return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Transactions are permitted on : ".concat(
-                            account.getSpecificDayMonthMovement().toString())));
-                }
-
-                return Mono.just(account);
-            });
+        return accountService.updateAccount(account);
     }
 
-    private static BigDecimal getCommission(Account account, String transactionType, Integer counterTransactions) {
 
-        if (counterTransactions > account.getLimitFreeMovements()) {
-            if (transactionType.equals(TransactionAccountTypeEnum.DEPOSIT.name())
-                || transactionType.equals(TransactionAccountTypeEnum.WITHDRAWAL.name())
-                || transactionType.equals(TransactionAccountTypeEnum.WIRE_TRANSFER.name()))
-                return account.getCommissionMovement();
-
-            if (transactionType.equals(TransactionAccountTypeEnum.MAINTENANCE_CHARGE.name()))
-                return account.getMaintenanceCommission();
-        }
-
-        return BigDecimal.valueOf(0.00);
-    }
 }
