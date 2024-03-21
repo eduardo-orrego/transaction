@@ -62,8 +62,7 @@ public class TransactionDebitServiceImpl implements TransactionDebitService {
               .toTransactionEntity(transactionRequest, accountSource), accountSource)
             .flatMap(transactionRepository::saveTransaction)
             .flatMap(transaction -> this.updateAccountAvailableBalance(accountSource,
-                transaction.getAmount(),
-                transaction.getTransactionType())
+                transaction.getAmount(), transaction.getTransactionType())
               .flatMap(account -> this.updateAccountAvailableBalance(accountTarget,
                 transaction.getAmount(),
                 TransactionAccountTypeEnum.DEPOSIT.name()))
@@ -108,29 +107,18 @@ public class TransactionDebitServiceImpl implements TransactionDebitService {
       );
   }
 
-  private Mono<Account> validationAccountAvailableBalance(List<AccountAssociated> accounts,
-    BigInteger cardNumber, BigDecimal transactionAmount) {
-    return this.getAccounts(accounts)
-      .flatMap(accountAssociated -> accountService.findAccount(cardNumber))
-      .filter(account -> account.getAvailableBalance().compareTo(transactionAmount) >= 0)
-      .next()
-      .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
-        "Cuentas Bancarias sin saldo suficiente - cardNumber: " + cardNumber.toString())));
-
-  }
-
   private Mono<Transaction> calculationTransactionCommission(Transaction transaction,
     Account account) {
 
     return transactionRepository.countTransactions(account.getAccountNumber())
       .flatMap(counterTransactions -> {
 
-        if (transaction.getTransactionType().equals(
-          TransactionAccountTypeEnum.MAINTENANCE_CHARGE.name()))
+        if (transaction.getTransactionType()
+          .equals(TransactionAccountTypeEnum.MAINTENANCE_CHARGE.name())) {
           transaction.setCommission(account.getMaintenanceCommission());
-        else if (counterTransactions > account.getLimitFreeMovements())
+        } else if (counterTransactions > account.getLimitFreeMovements()) {
           transaction.setCommission(account.getCommissionMovement());
-
+        }
         return Mono.just(transaction);
       });
   }
@@ -163,15 +151,8 @@ public class TransactionDebitServiceImpl implements TransactionDebitService {
       .sorted(Comparator.comparing(AccountAssociated::getAssociatedType)));
   }
 
-  private Mono<Account> validationAccountAvailableBalance(BigInteger accountNumber,
-    BigDecimal transactionAmount) {
-    return accountService.findAccount(accountNumber)
-      .filter(account -> account.getAvailableBalance().compareTo(transactionAmount) >= 0)
-      .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
-        "Cuenta bancaria sin saldo suficiente - accountNumber: " + accountNumber.toString())));
-  }
-
-  private Mono<Account> updateAccountAvailableBalance(Account account, BigDecimal transactionAmount,
+  private Mono<Account> updateAccountAvailableBalance(Account account, BigDecimal
+    transactionAmount,
     String transactionType) {
 
     account.setAvailableBalance(transactionType.equals(TransactionAccountTypeEnum.DEPOSIT.name())
@@ -181,5 +162,23 @@ public class TransactionDebitServiceImpl implements TransactionDebitService {
     return accountService.updateAccount(account);
   }
 
+
+  private Mono<Account> validationAccountAvailableBalance(List<AccountAssociated> accounts,
+    BigInteger cardNumber, BigDecimal transactionAmount) {
+    return this.getAccounts(accounts)
+      .flatMap(accountAssociated -> accountService.findAccount(cardNumber))
+      .filter(account -> account.getAvailableBalance().compareTo(transactionAmount) >= 0)
+      .next()
+      .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        "Cuentas Bancarias sin saldo suficiente - cardNumber: " + cardNumber.toString())));
+  }
+
+  private Mono<Account> validationAccountAvailableBalance(BigInteger accountNumber,
+    BigDecimal transactionAmount) {
+    return accountService.findAccount(accountNumber)
+      .filter(account -> account.getAvailableBalance().compareTo(transactionAmount) >= 0)
+      .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        "Cuenta bancaria sin saldo suficiente - accountNumber: " + accountNumber.toString())));
+  }
 
 }

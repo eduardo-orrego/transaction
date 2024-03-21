@@ -225,7 +225,7 @@ public class TransactionController {
   }
 
   /**
-   * GET : Get a list of transactions for the customer
+   * GET : Get a list of transactions for the customer.
    *
    * @param documentCustomer (required)
    * @return OK (status code 200)
