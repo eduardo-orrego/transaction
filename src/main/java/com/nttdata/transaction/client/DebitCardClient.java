@@ -8,21 +8,33 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+/**
+ * Class: DebitCardClient. <br/>
+ * <b>Bootcamp NTTDATA</b><br/>
+ *
+ * @author NTTDATA
+ * @version 1.0
+ *   <u>Developed by</u>:
+ *   <ul>
+ *   <li>Developer Carlos</li>
+ *   </ul>
+ * @since 1.0
+ */
 @Component
 public class DebitCardClient {
 
-    @Value("${microservices.creditCards.urlPaths.getDebitCards}")
-    private String urlPathsGetDebitCards;
+  @Value("${microservices.debitCards.urlPaths.getDebitCards}")
+  private String urlPathsGetDebitCards;
 
-    public Mono<DebitCard> getDebitCard(BigInteger documentNumber) {
+  public Mono<DebitCard> getDebitCard(BigInteger cardNumber) {
 
-        return WebClient.create()
-            .get()
-            .uri(urlPathsGetDebitCards, documentNumber)
-            .accept(MediaType.APPLICATION_JSON)
-            .retrieve()
-            .bodyToMono(DebitCard.class);
+    return WebClient.create()
+      .get()
+      .uri(urlPathsGetDebitCards, cardNumber)
+      .accept(MediaType.APPLICATION_JSON)
+      .retrieve()
+      .bodyToMono(DebitCard.class);
 
-    }
+  }
 
 }

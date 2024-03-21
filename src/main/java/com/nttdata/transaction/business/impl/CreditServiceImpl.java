@@ -13,43 +13,55 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+/**
+ * Class: CreditServiceImpl. <br/>
+ * <b>Bootcamp NTTDATA</b><br/>
+ *
+ * @author NTTDATA
+ * @version 1.0
+ *   <u>Developed by</u>:
+ *   <ul>
+ *   <li>Developer Carlos</li>
+ *   </ul>
+ * @since 1.0
+ */
 @Slf4j
 @Service
 public class CreditServiceImpl implements CreditService {
 
-    @Autowired
-    private CreditClient creditClient;
+  @Autowired
+  private CreditClient creditClient;
 
-    @Override
-    public Mono<Credit> findCredit(BigInteger creditNumber) {
-        return creditClient.getCreditByNumber(creditNumber)
-            .switchIfEmpty(Mono.defer(() -> Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
-                "No se encontraron datos del credito"))))
-            .doOnSuccess(credit -> log.info("Successful find Credit - Id  "
-                .concat(credit.getCreditNumber().toString())));
-    }
+  @Override
+  public Mono<Credit> findCredit(BigInteger creditNumber) {
+    return creditClient.getCreditByNumber(creditNumber)
+      .switchIfEmpty(Mono.defer(() -> Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+        "No se encontraron datos del credito"))))
+      .doOnSuccess(credit -> log.info("Successful find Credit - Id  "
+        .concat(credit.getCreditNumber().toString())));
+  }
 
-    @Override
-    public Flux<Credit> findCredits(BigInteger customerDocument) {
-        return creditClient.getCreditByCustomerDocument(customerDocument)
-            .switchIfEmpty(Mono.defer(() -> Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
-                "No se encontraron creditos - customerDocument".concat(customerDocument.toString())))))
-            .doOnComplete(() -> log.info("Successful find Credit - Id  "
-                .concat(customerDocument.toString())));
-    }
+  @Override
+  public Flux<Credit> findCredits(BigInteger customerDocument) {
+    return creditClient.getCreditByCustomerDocument(customerDocument)
+      .switchIfEmpty(Mono.defer(() -> Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+        "No se encontraron creditos - customerDocument".concat(customerDocument.toString())))))
+      .doOnComplete(() -> log.info("Successful find Credit - Id  "
+        .concat(customerDocument.toString())));
+  }
 
-    @Override
-    public Mono<Credit> updateCredit(Credit credit) {
-        return creditClient.putCredit(credit)
-            .doOnSuccess(creditEntity -> log.info("Successful update Credit - Id: "
-                .concat(creditEntity.getId())));
+  @Override
+  public Mono<Credit> updateCredit(Credit credit) {
+    return creditClient.putCredit(credit)
+      .doOnSuccess(creditEntity -> log.info("Successful update Credit - Id: "
+        .concat(creditEntity.getId())));
 
-    }
+  }
 
-    @Override
-    public Mono<Boolean> findExistsCreditOverdue(BigInteger customerDocument) {
-        return this.findCredits(customerDocument)
-            .any(credit -> LocalDate.now().isAfter(credit.getDueDate()));
-    }
+  @Override
+  public Mono<Boolean> findExistsCreditOverdue(BigInteger customerDocument) {
+    return this.findCredits(customerDocument)
+      .any(credit -> LocalDate.now().isAfter(credit.getDueDate()));
+  }
 
 }

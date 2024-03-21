@@ -11,19 +11,31 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 
+/**
+ * Class: DebitCardServiceImpl. <br/>
+ * <b>Bootcamp NTTDATA</b><br/>
+ *
+ * @author NTTDATA
+ * @version 1.0
+ *   <u>Developed by</u>:
+ *   <ul>
+ *   <li>Developer Carlos</li>
+ *   </ul>
+ * @since 1.0
+ */
 @Slf4j
 @Service
 public class DebitCardServiceImpl implements DebitCardService {
 
-    @Autowired
-    private DebitCardClient debitCardClient;
+  @Autowired
+  private DebitCardClient debitCardClient;
 
-    @Override
-    public Mono<DebitCard> findDebitCard(BigInteger cardNumber) {
-        return debitCardClient.getDebitCard(cardNumber)
-            .switchIfEmpty(Mono.defer(() -> Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
-                "No se encontraron datos de la tarjeta de debito"))))
-            .doOnSuccess(credit -> log.info("Successful find Debit Card - cardNumber  "
-                .concat(cardNumber.toString())));
-    }
+  @Override
+  public Mono<DebitCard> findDebitCard(BigInteger cardNumber) {
+    return debitCardClient.getDebitCard(cardNumber)
+      .switchIfEmpty(Mono.defer(() -> Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+        "No se encontraron datos de la tarjeta de debito"))))
+      .doOnSuccess(credit -> log.info("Successful find Debit Card - cardNumber  "
+        .concat(cardNumber.toString())));
+  }
 }
