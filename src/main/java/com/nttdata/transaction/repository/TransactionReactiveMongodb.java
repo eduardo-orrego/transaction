@@ -9,27 +9,39 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+/**
+ * Class: TransactionReactiveMongodb. <br/>
+ * <b>Bootcamp NTTDATA</b><br/>
+ *
+ * @author NTTDATA
+ * @version 1.0
+ *   <u>Developed by</u>:
+ *   <ul>
+ *   <li>Developer Carlos</li>
+ *   </ul>
+ * @since 1.0
+ */
 @Repository
 public interface TransactionReactiveMongodb extends ReactiveMongoRepository<Transaction, String> {
 
-    Mono<Transaction> findByNumber(BigInteger transactionNumber);
+  Mono<Transaction> findByNumber(BigInteger transactionNumber);
 
-    Flux<Transaction> findByAccountNumberSource(BigInteger accountNumber);
+  Flux<Transaction> findByAccountNumberSource(BigInteger accountNumber);
 
-    Flux<Transaction> findByCustomerDocument(BigInteger customerDocument);
+  Flux<Transaction> findByCustomerDocument(BigInteger customerDocument);
 
-    @Aggregation(pipeline = {
-        "{ $match: { numberAccount: ?0 } }",
-        "{ $count: 'totalTransactions' }",
-        "{ $default: { totalTransactions: 0 } }"
-    })
-    Mono<Integer> countByAccountNumberSource(BigInteger accountNumber);
+  @Aggregation(pipeline = {
+    "{ $match: { accountNumberSource: ?0 } }",
+    "{ $count: 'totalTransactions' }",
+    "{ $default: { totalTransactions: 0 } }"
+  })
+  Mono<Integer> countAmount(BigInteger accountNumberSource);
 
-    @Aggregation(pipeline = {
-        "{ $match: { type: ?0, numberAccount: ?1 } }",
-        "{ $group: { _id: null, totalAmount: { $sum: $amount } } }",
-        "{ $default: { totalAmount: 0.00 } }"
-    })
-    Mono<BigDecimal> sumAmountByTypeAndAccountNumberSource(String type, BigInteger accountNumber);
+  @Aggregation(pipeline = {
+    "{ $match: { type: ?0, accountNumberSource: ?1 } }",
+    "{ $group: { _id: null, totalAmount: { $sum: $amount } } }",
+    "{ $default: { totalAmount: 0.00 } }"
+  })
+  Mono<Double> sumAmount(String type, BigInteger accountNumberSource);
 
 }

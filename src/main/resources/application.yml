@@ -10,21 +10,21 @@ server:
   port: 8087
 
 microservices:
-  customer:
+  customers:
     urlPaths:
       getCustomerById: http://localhost:8081/api/customers/{customerId}
-  account:
+  accounts:
     urlPaths:
       getAccountByNumber: http://localhost:8083/api/accounts/{accountNumber}
       putAccount: http://localhost:8083/api/accounts/{accountId}
-  credit:
+  credits:
     urlPaths:
-      getCreditByNumber: http://localhost:8085/api/credits/{accountNumber}
+      getCreditByNumber: http://localhost:8085/api/credits/{creditNumber}
       getCreditByCustomerDocument: http://localhost:8085/api/credits
       putCredit: http://localhost:8085/api/credits/{creditId}
   debitCards:
     urlPaths:
-      getDebitCards: http://localhost:8084/api/debitCards
+      getDebitCards: http://localhost:8084/api/debitCards/{cardNumber}
   creditCards:
     urlPaths:
-      getCreditCards: http://localhost:8086/api/creditCards
+      getCreditCards: http://localhost:8086/api/creditCards/{cardNumber}
