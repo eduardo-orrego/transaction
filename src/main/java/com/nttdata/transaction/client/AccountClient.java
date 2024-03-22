@@ -2,6 +2,7 @@ package com.nttdata.transaction.client;
 
 import com.nttdata.transaction.model.account.Account;
 import java.math.BigInteger;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -20,6 +21,7 @@ import reactor.core.publisher.Mono;
  *   </ul>
  * @since 1.0
  */
+@Slf4j
 @Component
 public class AccountClient {
 
@@ -39,6 +41,7 @@ public class AccountClient {
   }
 
   public Mono<Account> putAccount(Account account) {
+
     return WebClient.create()
       .put()
       .uri(urlPathPutAccount, account.getId())
@@ -47,4 +50,5 @@ public class AccountClient {
       .retrieve()
       .bodyToMono(Account.class);
   }
+
 }

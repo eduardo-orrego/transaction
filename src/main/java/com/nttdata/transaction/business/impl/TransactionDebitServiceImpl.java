@@ -112,7 +112,6 @@ public class TransactionDebitServiceImpl implements TransactionDebitService {
 
     return transactionRepository.countTransactions(account.getAccountNumber())
       .flatMap(counterTransactions -> {
-
         if (transaction.getTransactionType()
           .equals(TransactionAccountTypeEnum.MAINTENANCE_CHARGE.name())) {
           transaction.setCommission(account.getMaintenanceCommission());
@@ -120,7 +119,8 @@ public class TransactionDebitServiceImpl implements TransactionDebitService {
           transaction.setCommission(account.getCommissionMovement());
         }
         return Mono.just(transaction);
-      });
+      })
+      .switchIfEmpty(Mono.just(transaction));
   }
 
   private Mono<Account> validationAccountLimitMovement(Account account, String transactionType) {
@@ -143,7 +143,8 @@ public class TransactionDebitServiceImpl implements TransactionDebitService {
         }
 
         return Mono.just(account);
-      });
+      })
+      .switchIfEmpty(Mono.just(account));
   }
 
   private Flux<AccountAssociated> getAccounts(List<AccountAssociated> accountAssociatedList) {

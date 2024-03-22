@@ -32,15 +32,13 @@ public interface TransactionReactiveMongodb extends ReactiveMongoRepository<Tran
 
   @Aggregation(pipeline = {
     "{ $match: { accountNumberSource: ?0 } }",
-    "{ $count: 'totalTransactions' }",
-    "{ $default: { totalTransactions: 0 } }"
+    "{ $count: 'totalTransactions' }"
   })
   Mono<Integer> countAmount(BigInteger accountNumberSource);
 
   @Aggregation(pipeline = {
-    "{ $match: { type: ?0, accountNumberSource: ?1 } }",
-    "{ $group: { _id: null, totalAmount: { $sum: $amount } } }",
-    "{ $default: { totalAmount: 0.00 } }"
+    "{ $match: { transactionType: ?0, accountNumberSource: ?1 } }",
+    "{ $group: { _id: null, totalAmount: { $sum: { $convert: { input: $amount, to: decimal } } }}}"
   })
   Mono<Double> sumAmount(String type, BigInteger accountNumberSource);
 

@@ -89,7 +89,7 @@ public class TransactionCreditServiceImpl implements TransactionCreditService {
 
   private Mono<Credit> validationCreditLimit(BigDecimal transactionAmount, Credit credit) {
     if (credit.getType().equals(CreditTypeEnum.CREDIT.name())
-      && credit.getAvailableBalance().add(transactionAmount)
+      && credit.getOutstandingBalance().add(transactionAmount)
       .compareTo(credit.getCreditLimit()) > 0) {
 
       return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
